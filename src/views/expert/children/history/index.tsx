@@ -12,7 +12,7 @@ const token = permanence.token.useToken();
 export default function index() {
   // --- States ---
   // Expert pending cases
-  const [pendingCases, setPendingCases] = useState<PendingCase[]>([]);
+  const [pendingCases, setPendingCases] = useState<string[]>([]);
   const [listLoading, setListLoading] = useState(false);
 
   // Selection & details
@@ -52,10 +52,10 @@ export default function index() {
   // --- Handlers ---
   async function fecthList(cb: () => void) {
     try {
-      const resp = await req.get<CasesStoreResult>("/expert/pending-cases", {
+      const resp = await req.get<{ data: string[] }>("/expert/modified-request-ids", {
         Authorization: `Bearer ${token}`,
       });
-      setPendingCases(resp.data.list);
+      setPendingCases(resp.data);
     } catch {
       console.log("[FARMAP]: failed to fetch expert pending cases.");
     } finally {
@@ -86,19 +86,22 @@ export default function index() {
   interface RevisedHistoryResponse {
     code: number;
     msg: null;
-    data: RevisedHistory[];
+    data: {
+      requestId: string;
+      initialJson: string;
+      revisionDataList: RevisedHistory[];
+    };
   }
 
   // Revised history
   const [revisedHistory, setRevisedHistory] = useState<RevisedHistory[]>([]);
   async function fetchRevisedHistory(id: string) {
     try {
-      const resp = await req.get<RevisedHistoryResponse>(`/expert/cases/${id}/history`, {
+      const resp = await req.get<RevisedHistoryResponse>(`/expert/request-data-comparison/${id}`, {
         Authorization: token,
       });
-      console.log(resp);
-
-      setRevisedHistory(resp.data);
+      console.log("request-data-comparison", resp);
+      setRevisedHistory(resp.data.revisionDataList);
     } catch {
       // PERF: failed to fetch
     }
@@ -113,8 +116,8 @@ export default function index() {
           disabled={listLoading}
           defaultValue="请选择 request id"
           options={pendingCases.map((c) => ({
-            value: c.requestId,
-            label: c.requestId,
+            value: c,
+            label: c,
           }))}
           onChange={(rid) => {
             setSelectedRequestId(rid);
@@ -128,7 +131,7 @@ export default function index() {
               <>
                 <Select
                   style={{ width: "100%" }}
-                  defaultValue="没有数据"
+                  defaultValue="请选择修改记录"
                   options={revisedHistory.map((h) => ({
                     value: h.revisionId,
                     label: `[专家id：${h.expertId}]-${h.revisionId}`,

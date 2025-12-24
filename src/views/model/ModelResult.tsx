@@ -1,14 +1,19 @@
 import { useEffect, useState, type JSX } from "react";
 import PlantReport from "./PlantReport";
 import { AlertCircle } from "lucide-react";
+import type { resultType } from ".";
 
 interface Props {
   text: string;
-  type: "normal" | "error";
+  type: resultType;
 }
 export default function ModelResult(props: Props) {
   const [text, setText] = useState<JSX.Element>(<span>{props.text}</span>);
+  console.log(props.type);
+
   useEffect(() => {
+    if (props.type === "default") return;
+
     if (props.type === "error") {
       const span = (
         <div className="p-8 text-center text-red-500 bg-red-50 rounded-lg border border-red-200">

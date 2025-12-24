@@ -1,4 +1,4 @@
-import type { CaseContent, CasesStoreResult, PendingCase } from "@/types/expert";
+import type { CaseContent } from "@/types/expert";
 import { permanence } from "@/utils/permanence";
 import { req } from "@/utils/reqeust";
 import { Card, Flex, Select } from "antd";

@@ -1,15 +1,14 @@
 import { useEffect, useState, type JSX } from "react";
 import PlantReport from "./PlantReport";
 import { AlertCircle } from "lucide-react";
-import type { resultType } from ".";
+import type { ResultType } from ".";
 
 interface Props {
   text: string;
-  type: resultType;
+  type: ResultType;
 }
 export default function ModelResult(props: Props) {
   const [text, setText] = useState<JSX.Element>(<span>{props.text}</span>);
-  console.log(props.type);
 
   useEffect(() => {
     if (props.type === "default") return;

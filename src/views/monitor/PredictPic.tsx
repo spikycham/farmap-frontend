@@ -3,11 +3,12 @@ import { useState } from "react";
 import Upload from "../model/analyze/Upload";
 import ModelResult from "../model/ModelResult";
 import { Loader2 } from "lucide-react";
+import type { ResultType } from "../model";
 
 export default function PredictPic() {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
-  const [type, setType] = useState<"normal" | "error">("error");
+  const [result, setResult] = useState("请输入图片进行模型推理。");
+  const [type, setType] = useState<ResultType>("default");
 
   return (
     <>

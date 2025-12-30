@@ -5,12 +5,12 @@ import { useState } from "react";
 import { TrademarkOutlined } from "@ant-design/icons";
 import { Loader2 } from "lucide-react";
 
-export type resultType = "default" | "normal" | "error";
+export type ResultType = "default" | "normal" | "error";
 export default function index() {
   const [result, setResult] = useState<string>("请输入图片进行模型推理。");
-  const [resultType, setResultType] = useState<resultType>("default");
+  const [resultType, setResultType] = useState<ResultType>("default");
 
-  const handleAnalyzeResult = (res: string, type: resultType) => {
+  const handleAnalyzeResult = (res: string, type: ResultType) => {
     setResult(res);
     setResultType(type);
   };

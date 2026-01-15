@@ -17,172 +17,178 @@ import { useUserStore } from "@/store/user";
 import { Loader2 } from "lucide-react";
 
 export default function Map() {
-  // Pass farm status to map
-  const farmCenter = useFarmStore((s) => s.center)
-    .split(",")
-    .map((c) => Number(c)) as [number, number];
-  const farmZoom = useFarmStore((s) => s.zoom);
-  const farmCrops = useFarmStore((s) => s.crops);
-  const farmLocations = useFarmStore((s) => s.locations);
+    // Pass farm status to map
+    const farmCenter = useFarmStore((s) => s.center)
+        .split(",")
+        .map((c) => Number(c)) as [number, number];
+    const farmZoom = useFarmStore((s) => s.zoom);
+    const farmCrops = useFarmStore((s) => s.crops);
+    const farmLocations = useFarmStore((s) => s.locations);
 
-  // Get farm select informations from local user storage
-  const localUserStore = permanence.user.useUserStore()!;
-  const farmOptions = localUserStore?.farms ?? useUserStore((s) => s.farms);
-  const [farm, setSelectFarm] = useState<FarmSelectType["value"]>(farmOptions[0]?.id ?? -1);
+    // Get farm select informations from local user storage
+    const localUserStore = permanence.user.useUserStore()!;
+    const farmOptions = localUserStore?.farms ?? useUserStore((s) => s.farms);
+    const [farm, setSelectFarm] = useState<FarmSelectType["value"]>(farmOptions[0]?.id ?? -1);
 
-  // Fetch the first farm content and store
-  const token = permanence.token.useToken();
-  const setFarmStore = useFarmStore((s) => s.setFarm);
-  const setLocalFarmStore = permanence.farm.setFarmStore;
-  useEffect(() => {
-    fetchFarm(farm);
-  }, []);
+    // Fetch the first farm content and store
+    const token = permanence.token.useToken();
+    const setFarmStore = useFarmStore((s) => s.setFarm);
+    const setLocalFarmStore = permanence.farm.setFarmStore;
+    useEffect(() => {
+        fetchFarm(farm);
+    }, []);
 
-  // Update the selected farm store
-  const changeFarmStore: (newId: number) => void = (newId) => {
-    setSelectFarm(newId);
-    fetchFarm(newId);
-  };
+    // Update the selected farm store
+    const changeFarmStore: (newId: number) => void = (newId) => {
+        setSelectFarm(newId);
+        fetchFarm(newId);
+    };
 
-  // Mode visibility
-  const [farmModes, setFarmModes] = useState<ModeSelectType["value"][]>(["none"]);
+    // Mode visibility
+    const [farmModes, setFarmModes] = useState<ModeSelectType["value"][]>(["none"]);
 
-  // Loading
-  const [fetchFarmLoading, setFetchFarmLoading] = useState(false);
-  const fetchFarm: (id: number) => Promise<void> = async (id: number) => {
-    try {
-      setFetchFarmLoading(true);
-      const resp = await req.get<{ data: FarmStoreState }>(`/user/get-farm?farmId=${id}`, {
-        Authorization: `Bearer ${token}`,
-      });
+    // Loading
+    const [fetchFarmLoading, setFetchFarmLoading] = useState(false);
+    const fetchFarm: (id: number) => Promise<void> = async (id: number) => {
+        try {
+            setFetchFarmLoading(true);
+            const resp = await req.get<{ data: FarmStoreState }>(`/user/get-farm?farmId=${id}`, {
+                Authorization: `Bearer ${token}`,
+            });
 
-      setFarmStore(resp.data);
-      // Store to local storage
-      setLocalFarmStore(resp.data);
-      // Set visible farm modes
-      const hasCrop = resp.data.crops.length > 0;
-      const hasLocation = resp.data.locations.length > 0;
-      const visibles: ModeSelectType["value"][] = [];
-      if (hasCrop) visibles.push("crop");
-      if (hasLocation) visibles.push("monitor");
-      // NOTE: always push a monitor to visibles
-      visibles.push("monitor");
-      // Push none to visibles when no content
-      if (!visibles.length) visibles.push("none");
+            setFarmStore(resp.data);
+            // Store to local storage
+            setLocalFarmStore(resp.data);
+            // Set visible farm modes
+            const hasCrop = resp.data.crops.length > 0;
+            const hasLocation = resp.data.locations.length > 0;
+            const visibles: ModeSelectType["value"][] = [];
+            if (hasCrop) visibles.push("crop");
+            if (hasLocation) visibles.push("monitor");
+            // NOTE: always push a monitor to visibles
+            // visibles.push("monitor");
+            // Push none to visibles when no content
+            if (!visibles.length) visibles.push("none");
 
-      setFarmModes(visibles);
-      setMode(visibles[0]);
-    } finally {
-      setFetchFarmLoading(false);
-    }
-  };
+            setFarmModes(visibles);
+            setMode(visibles[0]);
+        } finally {
+            setFetchFarmLoading(false);
+        }
+    };
 
-  // THe mode & info select states
-  const [mode, setMode] = useState<ModeSelectType["value"]>("none");
-  const [info, setInfo] = useState<InfoSelectType["value"]>("yield");
+    // THe mode & info select states
+    const [mode, setMode] = useState<ModeSelectType["value"]>("none");
+    const [info, setInfo] = useState<InfoSelectType["value"]>("yield");
 
-  // Slider
-  const [slider, setSlider] = useState<Omit<SliderProps, "onChangeEnd" | "disabled">>({
-    value: {
-      left: 10,
-      right: 90,
-    },
-    scale: {
-      min: 0,
-      max: 100,
-    },
-    decimal: false,
-  });
-  const crops = useFarmStore((s) => s.crops);
-  useEffect(() => {
-    const values = crops.map((c) => Number(c[info as keyof Crop]));
-    const max = Math.max(...values);
-    const min = Math.min(...values);
-    // Update slider range and values
-    setSlider({
-      value: {
-        left: (max - min) * 0.2 + min,
-        right: (max - min) * 0.8 + min,
-      },
-      scale: {
-        max,
-        min,
-      },
-      decimal: info === "yield" ? false : true,
+    // Slider
+    const [slider, setSlider] = useState<Omit<SliderProps, "onChangeEnd" | "disabled">>({
+        value: {
+            left: 10,
+            right: 90,
+        },
+        scale: {
+            min: 0,
+            max: 100,
+        },
+        decimal: false,
     });
-  }, [crops, info]);
+    const crops = useFarmStore((s) => s.crops);
+    useEffect(() => {
+        const values = crops.map((c) => Number(c.info[info as keyof Crop["info"]]));
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        // Update slider range and values
+        setSlider({
+            value: {
+                left: (max - min) * 0.2 + min,
+                right: (max - min) * 0.8 + min,
+            },
+            scale: {
+                max,
+                min,
+            },
+            decimal: true,
+            // decimal: info === "yield" ? false : true,
+        });
+    }, [crops, info]);
 
-  const sliderChange: SliderProps["onChangeEnd"] = (left, right) => {
-    setSlider((prev) => ({
-      ...prev,
-      value: {
-        left,
-        right,
-      },
-    }));
-  };
+    const sliderChange: SliderProps["onChangeEnd"] = (left, right) => {
+        setSlider((prev) => ({
+            ...prev,
+            value: {
+                left,
+                right,
+            },
+        }));
+    };
 
-  return (
-    <Flex vertical gap="0.5rem" style={{ height: "100%" }}>
-      <Card
-        title={
-          <Flex align="center">
-            <GlobalOutlined />
-            &nbsp;&nbsp;地图详情
-            {fetchFarmLoading && <Loader2 className="w-6 h-6 ml-2 text-blue-500 animate-spin" />}
-          </Flex>
-        }
-        style={{ height: "100%" }}
-        styles={{ body: { height: "calc(100% - 60px)" } }}>
-        <Flex gap="0.5rem" vertical style={{ height: "100%" }}>
-          <Flex gap="0.5rem" style={{ width: "100%" }} className="resp-dashboard__selects">
-            <FarmSelect
-              value={farm}
-              options={farmOptions}
-              disabled={fetchFarmLoading}
-              onChange={changeFarmStore}
-            />
-            <ModeSelect
-              value={mode}
-              modes={farmModes}
-              disabled={fetchFarmLoading}
-              onChange={(newMode) => {
-                setMode(newMode);
-              }}
-            />
-            <InfoSelect
-              value={info}
-              disabled={mode !== "crop" || fetchFarmLoading}
-              onChange={(newInfo) => {
-                setInfo(newInfo);
-              }}
-            />
-          </Flex>
-          <MapContainer
-            center={farmCenter}
-            zoom={farmZoom}
-            crops={farmCrops}
-            farmLocations={farmLocations}
-            infoKey={info}
-            modeKey={mode}
-            slider={slider}
-          />
+    return (
+        <Flex vertical gap="0.5rem" style={{ height: "100%" }}>
+            <Card
+                title={
+                    <Flex align="center">
+                        <GlobalOutlined />
+                        &nbsp;&nbsp;地图详情
+                        {fetchFarmLoading && (
+                            <Loader2 className="w-6 h-6 ml-2 text-blue-500 animate-spin" />
+                        )}
+                    </Flex>
+                }
+                style={{ height: "100%" }}
+                styles={{ body: { height: "calc(100% - 60px)" } }}>
+                <Flex gap="0.5rem" vertical style={{ height: "100%" }}>
+                    <Flex
+                        gap="0.5rem"
+                        style={{ width: "100%" }}
+                        className="resp-dashboard__selects">
+                        <FarmSelect
+                            value={farm}
+                            options={farmOptions}
+                            disabled={fetchFarmLoading}
+                            onChange={changeFarmStore}
+                        />
+                        <ModeSelect
+                            value={mode}
+                            modes={farmModes}
+                            disabled={fetchFarmLoading}
+                            onChange={(newMode) => {
+                                setMode(newMode);
+                            }}
+                        />
+                        <InfoSelect
+                            value={info}
+                            disabled={mode !== "crop" || fetchFarmLoading}
+                            onChange={(newInfo) => {
+                                setInfo(newInfo);
+                            }}
+                        />
+                    </Flex>
+                    <MapContainer
+                        center={farmCenter}
+                        zoom={farmZoom}
+                        crops={farmCrops}
+                        farmLocations={farmLocations}
+                        infoKey={info}
+                        modeKey={mode}
+                        slider={slider}
+                    />
+                </Flex>
+            </Card>
+            <Card
+                title={
+                    <>
+                        <MacCommandOutlined />
+                        &nbsp;&nbsp;调整分布
+                    </>
+                }
+                styles={{ body: { padding: "0 24px" } }}>
+                <Slider
+                    {...slider}
+                    onChangeEnd={sliderChange}
+                    disabled={fetchFarmLoading || mode !== "crop"}
+                />
+            </Card>
         </Flex>
-      </Card>
-      <Card
-        title={
-          <>
-            <MacCommandOutlined />
-            &nbsp;&nbsp;调整分布
-          </>
-        }
-        styles={{ body: { padding: "0 24px" } }}>
-        <Slider
-          {...slider}
-          onChangeEnd={sliderChange}
-          disabled={fetchFarmLoading || mode !== "crop"}
-        />
-      </Card>
-    </Flex>
-  );
+    );
 }

@@ -56,6 +56,11 @@ export default function Map() {
                 Authorization: `Bearer ${token}`,
             });
 
+            if (resp.data.type === "rice") {
+                setInfo("phenology");
+            } else {
+                setInfo("yield");
+            }
             setFarmStore(resp.data);
             // Store to local storage
             setLocalFarmStore(resp.data);
@@ -95,9 +100,30 @@ export default function Map() {
     });
     const crops = useFarmStore((s) => s.crops);
     useEffect(() => {
+        const shouldManualSet: Array<InfoSelectType["value"]> = [
+            "phenology",
+            "growth",
+            "impact",
+            "nitrogen",
+            "potassium",
+            "phosphorus",
+        ];
         const values = crops.map((c) => Number(c.info[info as keyof Crop["info"]]));
-        const max = Math.max(...values);
-        const min = Math.min(...values);
+        let max = 0;
+        let min = 0;
+        if (shouldManualSet.includes(info)) {
+            if (info === "phenology") {
+                max = 9;
+                min = 1;
+            } else {
+                max = 3;
+                min = 1;
+            }
+        } else {
+            max = Math.max(...values);
+            min = Math.min(...values);
+        }
+
         // Update slider range and values
         setSlider({
             value: {

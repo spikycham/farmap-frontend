@@ -76,7 +76,7 @@ export default function InfoSelect(props: Props) {
             <span> | 展示信息</span>
             <Select
                 style={{ flexGrow: 1 }}
-                defaultValue={props.value}
+                value={props.value}
                 disabled={props.disabled}
                 options={options}
                 onChange={(info) => {

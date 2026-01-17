@@ -33,7 +33,7 @@ export type FarmStoreState = {
     // components: ("map" | "operations" | "weather" | "statistic")[];
     id: number;
     name: string;
-    type: "citrus" | "plum";
+    type: "citrus" | "plum" | "rice";
     crops: Crop[];
     locations: Location[];
     // User informations
